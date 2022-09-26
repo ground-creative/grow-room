@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-mqtt = { 
+mqtt = {
 	"user": "",
 	"password": "",
 	"server": "127.0.0.1",
