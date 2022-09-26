@@ -19,5 +19,5 @@ python app.py
 
 ## Update 
 
-Save the file config/config.py and repeat installation procedure.\
-Replace config file
+1. Save the file config/config.py and repeat installation procedure.\
+2. Replace config file
