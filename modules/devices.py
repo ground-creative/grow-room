@@ -4,7 +4,6 @@ import config.config as config
 from datetime import datetime
 
 class DevicesModule:
-	
 	def set_current( connection ):
 		DevicesModule._connection = connection
 		DevicesModule._values = { }
@@ -15,6 +14,8 @@ class DevicesModule:
 				DevicesModule._values[ "display_network_state" ] = device[ "state" ]
 			if device[ "id" ] == config.misc[ "roomID" ] + "-air-sensors":
 				DevicesModule._values[ "airsensors_network_state" ] = device[ "state" ]
+			if device[ "id" ] == config.misc[ "roomID" ] + "-doser-one":
+				DevicesModule._values[ "doser_one_network_state" ] = device[ "state" ]
 	def data( key =  None ):
 		if ( key is None ):
 			return DevicesModule._values

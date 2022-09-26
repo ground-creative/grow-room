@@ -9,7 +9,9 @@ mqtt = {
 
 misc = {
 	"debug_level": "DEBUG",
-	"roomID": ""
+	"roomID": "" ,
+	"cycle_topup_value": 2 ,
+	"cycle_min_ppm": 200
 }
 
 sqlite = {
@@ -34,6 +36,7 @@ dps = {
 	"airco_state": "137",
 	"display_network_state": "117" ,
 	"airsensors_network_state": "136" ,
+	"doser_one_network_state": "128" ,
 	"cur_water_level": "109",
 	"new_water_level": "113" ,
 	"in_temp": "102" ,
@@ -46,5 +49,12 @@ dps = {
 	"ec": "111" ,
 	"con_lcd": "104" ,
 	"air_sen_oled": "127" ,
-	"restart": "126"
+	"restart": "126" ,
+	"cycle_job": "120" ,
+	"cycle_topup": "124" ,
+	"pause_cycle": "125" ,
+	"cycle_type": "119" ,
+	"cycle_start_date": "121" ,
+	"cycle_days": "122" ,
+	"cycle_week": "123"
 }

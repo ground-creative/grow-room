@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 class ValuesModule:
-	def set_current( connection ):
+	def set_current(connection):
 		ValuesModule._connection = connection
-		cursor = ValuesModule._connection.cursor( )
-		row = ValuesModule._connection.execute( "SELECT * FROM dp" ).fetchone( )
-		ValuesModule._values = { }
+		cursor = ValuesModule._connection.cursor()
+		row = ValuesModule._connection.execute("SELECT * FROM dp").fetchone()
+		ValuesModule._values = {}
 		ValuesModule._values[ "feeding_pump_state" ] = bool( row[ "feeding_pump_state" ] )
 		ValuesModule._values[ "lights_state" ] = bool( row[ "lights_state" ] )
 		ValuesModule._values[ "drain_pump_state" ] = bool( row[ "drain_pump_state" ] )
@@ -23,14 +23,15 @@ class ValuesModule:
 		ValuesModule._values[ "ph" ] = 0
 		ValuesModule._values[ "ppm" ] = 0
 		ValuesModule._values[ "ec" ] = 0
-		ValuesModule._values[ "con_lcd" ] = bool( row[ "con_lcd" ] )
-		ValuesModule._values[ "air_sen_oled" ] = bool( row[ "air_sen_oled" ] )
-	def data( key =  None ):
-		if ( key is None ):
+		ValuesModule._values[ "con_lcd" ] = bool(row["con_lcd"])
+		ValuesModule._values[ "air_sen_oled" ] = bool(row["air_sen_oled"])
+		ValuesModule._values[ "pause_cycle" ] = bool(row[ "pause_cycle"])
+	def data(key =  None):
+		if (key is None):
 			return ValuesModule._values
 		return ValuesModule._values[ key ]
-	def set( key, value , dbInsert = True ):
+	def set(key, value , dbInsert = True):
 		ValuesModule._values[ key ] = value
-		if ( dbInsert ):
+		if (dbInsert):
 			ValuesModule._connection.cursor( ).execute( "UPDATE dp SET " +  key + " = ?", ( value, ) )
 			ValuesModule._connection.commit( )

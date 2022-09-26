@@ -12,6 +12,7 @@ class MqttModule:
 		mosq.subscribe(  config.misc[ "roomID" ] + "/#" )
 		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-main-controller" )
 		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-air-sensors" )
+		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-doser-one" )
 		mosq.subscribe( "m/" + config.misc[ "roomID" ] + "/#" )
 	def  on_mqtt_message( mosq, userdata, msg ):
 		logging.info( "MQTT Uncaught Message Received: " + str( msg.topic ) + " -> "  + str( msg.payload.decode( "utf-8" ) ) )
@@ -22,6 +23,8 @@ class MqttModule:
 			DevicesModule.set( "display_network_state", state, config.misc[ "roomID" ] + "-display" )
 		if ( "device-status/" + config.misc[ "roomID" ] + "-air-sensors" == msg.topic ):
 			DevicesModule.set( "airsensors_network_state", state, config.misc[ "roomID" ] + "-air-sensors" )	
+		if ( "device-status/" + config.misc[ "roomID" ] + "-doser-one" == msg.topic ):
+			DevicesModule.set( "doser_one_network_state", state, config.misc[ "roomID" ] + "-doser-one" )	
 	def on_device_manual_action( mosq, userdata, msg ):
 		value = msg.payload.decode( "utf-8" )
 		logging.info( "MQTT Device Manual Action: "  + msg.topic + " -> " + str( value ) )
