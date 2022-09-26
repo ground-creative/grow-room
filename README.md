@@ -2,12 +2,13 @@
 
 ## Installation
 
-clone the repository
+1. clone the repository
 ```
 git clone https://github.com/ground-creative/grow-room.git .
 
 ```
-Populate options in config/config.py file and run setup.py
+2. Populate options in config/config.py file
+3. run setup.py
 ```
 sudo python3 setup.py install
 ```
