@@ -20,5 +20,5 @@ python3 app.py
 
 ## Update 
 
-1. Save the file config/config.py and repeat installation procedure.\
+1. Save the file config/config.py and repeat installation procedure.
 2. Replace config file

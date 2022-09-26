@@ -7,9 +7,9 @@ from modules.devices import DevicesModule
 import config.config as config
 import logging
 import json
+import time
 
 class TuyaModule:
-	
 	def __init__( self, productid, uuid, authkey, mqttClient ):
 		self.client = TuyaClient( productid, uuid, authkey )
 		self.client.on_connected = self.on_connected
@@ -19,16 +19,12 @@ class TuyaModule:
 		self.mqtt = mqttClient
 		self._change_water_level_started = False
 		self._new_water_level = 0
-
 	def on_connected( self ):
 		print( 'Connected to tuya mqtt server!' )
-
 	def on_qrcode( self, url ):
 		qrcode_generate( url )
-
 	def on_reset( self, data ):
 		print( 'Reset:', data )
-
 	def on_dps( self, dps ):
 		print( 'DataPoints received: ', dps )
 		key = next( iter(dps) )
@@ -59,6 +55,18 @@ class TuyaModule:
 				self.mqtt.publish( config.misc[ "roomID" ] + "/water-valve"  , 0 )
 				self.mqtt.publish( config.misc[ "roomID" ] + "/drain-pump"  , 0 )
 				self._change_water_level_started = False
+		# Main controller lcd backlight
+		if ( key == config.dps[ "con_lcd" ] ):
+			self.mqtt.publish( config.misc[ "roomID" ] + "/main-controller-display-backlight", int( dps[ key ] ) )
+			ValuesModule.set( "con_lcd", dps[ key ] )
+		# Air sensors oled backlight
+		if ( key == config.dps[ "air_sen_oled" ] ):
+			self.mqtt.publish( config.misc[ "roomID" ] + "/air-sensors-display-backlight", int( dps[ key ] ) )
+			ValuesModule.set( "air_sen_oled", dps[ key ] )			
+		# Restart	
+		if ( key == config.dps[ "restart" ] ):
+			self.mqtt.publish( config.misc[ "roomID" ] + "/air-sensors-restart", int( dps[ key ] ) )	
+			self.mqtt.publish( config.misc[ "roomID" ] + "/main-controller-restart", int( dps[ key ] ) )			
 		# Relays states
 		elif ( isinstance( dps[ key ], ( bool ) ) ):
 			for function in config.dps:
@@ -71,13 +79,14 @@ class TuyaModule:
 						self._change_water_level_started = False
 					if ( function == "water_valve_state" and dps[ key ] == False ):
 						self._change_water_level_started = False
-		values = self.values( ValuesModule.data( ) )
-		logging.info( "Pushing action dps data from loop: %s", values )	
-		self.client.push_dps( values )
 		
-	def values( self, data ):
-		devices = DevicesModule.data( )
-		dps = { }
+		values = self.values(ValuesModule.data())
+		logging.info("Pushing action dps data from loop: %s", values)	
+		self.client.push_dps(values)
+		#time.sleep( 2 )
+	def values(self, data):
+		devices = DevicesModule.data()
+		dps = {}
 		#values
 		dps[ config.dps[ "lights_state" ] ] = data[ "lights_state" ]
 		dps[ config.dps[ "extractor_state" ] ] = data[ "extractor_state" ]
@@ -86,9 +95,20 @@ class TuyaModule:
 		dps[ config.dps[ "fan_state" ] ] = data[ "fan_state" ]
 		dps[ config.dps[ "feeding_pump_state" ] ] = data[ "feeding_pump_state" ]
 		dps[ config.dps[ "drain_pump_state" ] ] = data[ "drain_pump_state" ]
+		dps[ config.dps[ "airco_state" ] ] = data[ "airco_state" ]
 		dps[ config.dps[ "cur_water_level" ] ] = data[ "cur_water_level" ]
 		dps[ config.dps[ "new_water_level" ] ] = data[ "cur_water_level" ]
-		# devices states
+		dps[ config.dps[ "in_temp" ] ] = data[ "in_temp" ]
+		dps[ config.dps[ "out_temp" ] ] = data[ "out_temp" ]
+		dps[ config.dps[ "in_hum" ] ] = data[ "in_hum" ]
+		dps[ config.dps[ "in_co2" ] ] = data[ "in_co2" ]
+		dps[ config.dps[ "water_temp" ] ] = data[ "water_temp" ]
+		dps[ config.dps[ "ph" ] ] = data[ "ph" ]
+		dps[ config.dps[ "ppm" ] ] = data[ "ppm" ]
+		dps[ config.dps[ "ec" ] ] = data[ "ec" ]
+		dps[ config.dps[ "con_lcd" ] ] = data[ "con_lcd" ]
+		dps[ config.dps[ "air_sen_oled" ] ] = data[ "air_sen_oled" ]
+		# devices network states
 		dps[ config.dps[ "display_network_state" ] ] = devices[ "display_network_state" ]
-		
+		dps[ config.dps[ "airsensors_network_state" ] ] = devices[ "airsensors_network_state" ]
 		return dps

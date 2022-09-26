@@ -11,9 +11,10 @@ class DevicesModule:
 		cursor = DevicesModule._connection.cursor( )
 		rows = DevicesModule._connection.execute( "SELECT * FROM devices" ).fetchall( )
 		for device in rows:
-			if device[ "id" ] == config.misc[ "roomID" ] + "-display":
+			if device[ "id" ] == config.misc[ "roomID" ] + "-main-controller":
 				DevicesModule._values[ "display_network_state" ] = device[ "state" ]
-		
+			if device[ "id" ] == config.misc[ "roomID" ] + "-air-sensors":
+				DevicesModule._values[ "airsensors_network_state" ] = device[ "state" ]
 	def data( key =  None ):
 		if ( key is None ):
 			return DevicesModule._values
