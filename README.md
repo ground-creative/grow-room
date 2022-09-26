@@ -15,7 +15,7 @@ sudo python3 setup.py install
 
 ## Run App
 ```
-python app.py
+python3 app.py
 ```
 
 ## Update 
