@@ -1,107 +1,66 @@
 #!/usr/bin/env python
 
-from tuyalinksdk.client import TuyaClient
-from tuyalinksdk.console_qrcode import qrcode_generate
-from modules.values import ValuesModule
-from modules.devices import DevicesModule
 import config.config as config
+import time
+import coloredlogs
+import sqlite3
 import logging
 import json
+import paho.mqtt.client as mqtt
+from modules.mqtt import MqttModule
+from modules.tuya import TuyaModule
+from modules.values import ValuesModule
+from modules.devices import DevicesModule
 
-class TuyaModule:
+# Logging
+coloredlogs.install( level = config.misc[ "debug_level" ] )
+
+# Sqlite
+connection = sqlite3.connect( config.sqlite[ "dbname" ]  + ".db", check_same_thread = False )
+connection.row_factory = sqlite3.Row
+cursor = connection.cursor( )
+#cursor.execute("DROP TABLE IF EXISTS dp")
+#cursor.execute("DROP TABLE IF EXISTS devices")
+row = cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' AND name='dp'" ).fetchone( )
+if ( row is None ):
+	logging.info( "Setting up sqlite dp table" )
+	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER,extractor_state INTEGER, cur_water_level INTEGER)")
+	cursor.execute("INSERT INTO dp VALUES (True,False,False,False,False,False,False,0)") 
+	connection.commit( )
+row = cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' AND name='devices'" ).fetchone( )
+if ( row is None ):
+	logging.info( "Setting up sqlite devices table" )
+	cursor.execute( "CREATE TABLE devices (id REAL,state REAL,last_seen INTEGER,last_alert INTEGER)" )
+	cursor.execute( "INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-display','online', NULL,NULL)" )
+	connection.commit( )
+
+# Set devices states
+DevicesModule.set_current( connection )
+
+# Set values states
+ValuesModule.set_current( connection )
+
+# Start mqtt local client
+mqtt_client = mqtt.Client( config.misc[ "roomID" ] ) 
+mqtt_client.on_connect = MqttModule.on_mqtt_connect
+mqtt_client.on_message = MqttModule.on_mqtt_message
+#mqtt_client.message_callback_add( config.mqtt[ "roomID" ] + "/water-tester", MqttModule.on_water_values )
+mqtt_client.message_callback_add( "device-status/#", MqttModule.on_device_status )
+mqtt_client.message_callback_add( "device-manual-action/" + config.misc[ "roomID" ] + "/#", MqttModule.on_device_manual_action )
+mqtt_client.username_pw_set( config.mqtt[ "user" ], config.mqtt[ "password" ] )
+mqtt_client.connect( config.mqtt[ "server" ], config.mqtt[ "port" ] )
+mqtt_client.loop_start( )
+
+# Start tuya mqtt client
+Tuya = TuyaModule( config.tuya[ "productid" ], config.tuya[ "uuid" ], config.tuya[ "authkey" ], mqtt_client )
+Tuya.client.connect( ) 
+Tuya.client.loop_start( )
+
+# Update values to tuya mqtt server
+while True:
 	
-	def __init__( self, productid, uuid, authkey, mqttClient ):
-		
-		self.client = TuyaClient( productid, uuid, authkey )
-		self.client.on_connected = self.on_connected
-		self.client.on_qrcode = self.on_qrcode
-		self.client.on_reset = self.on_reset
-		self.client.on_dps = self.on_dps
-		self.mqtt = mqttClient
-		self._change_water_level_started = False
-		self._new_water_level = 0
-
-	def on_connected( self ):
-		
-		print( 'Connected to tuya mqtt server!' )
-
-	def on_qrcode( self, url ):
-		
-		qrcode_generate( url )
-
-	def on_reset( self, data ):
-		
-		print( 'Reset:', data )
-
-	def on_dps( self, dps ):
-		
-		print( 'DataPoints received: ', dps )
-		key = next( iter(dps) )
-		
-		# Change water level		
-		if ( config.dps[ "new_water_level" ] in dps ):
-			if ( dps[ config.dps[ "new_water_level" ] ] > ValuesModule.data( "cur_water_level" ) ):
-				self._change_water_level_started = True
-				self._new_water_level = dps[ config.dps[ "new_water_level" ] ]
-				ValuesModule.set( "water_valve_state", True )
-				ValuesModule.set( "drain_pump_state", False )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/water-valve"  , 1 )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/drain-pump"  , 0 )
-			elif ( dps[ config.dps[ "new_water_level" ] ] < ValuesModule.data( "cur_water_level" ) ):
-				self._change_water_level_started = True
-				self._new_water_level = dps[ config.dps[ "new_water_level" ] ]
-				ValuesModule.set( "water_valve_state", False )
-				ValuesModule.set( "drain_pump_state", True )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/water-valve"  , 0 )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/drain-pump"  , 1 )
-				
-		# Current water level
-		if ( key == config.dps[ "cur_water_level" ] ):
-			logging.info( "setting current water level to " + str( dps[ key ] ) )
-			ValuesModule.set( "cur_water_level", dps[ key ] )
-			self.mqtt.publish( config.misc[ "roomID" ] + "/water-level" , json.dumps( { "level": dps[ key ] } ) )
-			if ( self._change_water_level_started == True and self._new_water_level == dps[ key ] ):
-				ValuesModule.set( "water_valve_state", False )
-				ValuesModule.set( "drain_pump_state", False )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/water-valve"  , 0 )
-				self.mqtt.publish( config.misc[ "roomID" ] + "/drain-pump"  , 0 )
-				self._change_water_level_started = False
-		
-		# Relays states
-		elif ( isinstance( dps[ key ], ( bool ) ) ):
-			
-			for function in config.dps:
-				if ( config.dps[ function ] == key ):
-					logging.info( "setting " + function.replace( "_" , " " ) + " to " + str( dps[ key ] ) )
-					ValuesModule.set( function, dps[ key ] )
-					subtopic = function.replace( "_state" , "" ).replace( "_" , "-" )
-					self.mqtt.publish( config.misc[ "roomID" ] + "/" + subtopic  , int( dps[ key ] ) )
-					if ( function == "drain_pump_state" and dps[ key ] == False ):
-						self._change_water_level_started = False
-					if ( function == "water_valve_state" and dps[ key ] == False ):
-						self._change_water_level_started = False
-					
-		values = self.values( ValuesModule.data( ) )
-		logging.info( "Pushing action dps data from loop: %s", values )	
-		self.client.push_dps( values )
-		
-	def values( self, data ):
-
-		devices = DevicesModule.data( )
-		dps = { }
-		
-		#values
-		dps[ config.dps[ "lights_state" ] ] = data[ "lights_state" ]
-		dps[ config.dps[ "extractor_state" ] ] = data[ "extractor_state" ]
-		dps[ config.dps[ "water_valve_state" ] ] = data[ "water_valve_state" ]
-		dps[ config.dps[ "mixing_pump_state" ] ] = data[ "mixing_pump_state" ]
-		dps[ config.dps[ "fan_state" ] ] = data[ "fan_state" ]
-		dps[ config.dps[ "feeding_pump_state" ] ] = data[ "feeding_pump_state" ]
-		dps[ config.dps[ "drain_pump_state" ] ] = data[ "drain_pump_state" ]
-		dps[ config.dps[ "cur_water_level" ] ] = data[ "cur_water_level" ]
-		dps[ config.dps[ "new_water_level" ] ] = data[ "cur_water_level" ]
-		
-		# devices states
-		dps[ config.dps[ "display_network_state" ] ] = devices[ "display_network_state" ]
-		
-		return dps
+	values = Tuya.values( ValuesModule.data( ) )
+	logging.info( "Pushing loop dps data from loop: %s", values )
+	Tuya.client.push_dps( values )
+	mqtt_client.publish( config.misc[ "roomID" ] + "/water-level" , json.dumps( { "level": ValuesModule.data( "cur_water_level" ) } ) )
+	time.sleep( config.tuya[ "update_interval" ] )

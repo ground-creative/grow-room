@@ -3,7 +3,6 @@
 class ValuesModule:
 	
 	def set_current( connection ):
-		
 		ValuesModule._connection = connection
 		cursor = ValuesModule._connection.cursor( )
 		row = ValuesModule._connection.execute( "SELECT * FROM dp" ).fetchone( )
@@ -18,16 +17,12 @@ class ValuesModule:
 		ValuesModule._values[ "cur_water_level" ] = row[ "cur_water_level" ]
 		
 	def data( key =  None ):
-		
 		if ( key is None ):
 			return ValuesModule._values
-			
 		return ValuesModule._values[ key ]
 		
 	def set( key, value , dbInsert = True ):
-		
 		ValuesModule._values[ key ] = value
-		
 		if ( dbInsert ):
 			ValuesModule._connection.cursor( ).execute( "UPDATE dp SET " +  key + " = ?", ( value, ) )
 			ValuesModule._connection.commit( )
