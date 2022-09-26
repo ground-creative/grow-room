@@ -17,7 +17,8 @@ setup(
 		'coloredlogs', 
 		'logging', 
 		'paho-mqtt', 
-		'tuyalinksdk' 
+		'tuyalinksdk',
+		'json'
 	]#, #external packages as dependencies
 	#python_requires='>=3.6'
 )
