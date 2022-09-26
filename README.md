@@ -11,3 +11,13 @@ Populate options in config/config.py file and run setup.py
 ```
 sudo python3 setup.py install
 ```
+
+## Run App
+```
+python app.py
+```
+
+## Update 
+
+Save the file config/config.py and repeat installation procedure.\
+Replace config file
