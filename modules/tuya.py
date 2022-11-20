@@ -82,8 +82,11 @@ class TuyaModule:
 				self._cycle.resume()
 		# Restart	
 		elif (key == config.dps["restart"]):
-			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))	
-			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))			
+			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))
+			self._mqtt.publish(config.misc["roomID"] + "/water-tester-restart", int(dps[key]))
+			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))	
+			self._mqtt.publish(config.misc["roomID"] + "/doser-one-restart", int(dps[key]))
+			self._mqtt.publish(config.misc["roomID"] + "/doser-two-restart", int(dps[key]))
 		# Relays states
 		elif (isinstance(dps[key], (bool))):
 			for function in config.dps:
@@ -135,4 +138,5 @@ class TuyaModule:
 		dps[config.dps["display_network_state"]] = devices["display_network_state"]
 		dps[config.dps["airsensors_network_state"]] = devices["airsensors_network_state"]
 		dps[config.dps["doser_one_network_state"]] = devices["doser_one_network_state"]
+		dps[config.dps["water_tester_network_state"]] = devices["water_tester_network_state"]
 		return dps
