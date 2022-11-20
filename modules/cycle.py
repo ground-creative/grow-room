@@ -56,13 +56,9 @@ class WaterCycleModule:
 					water_level = data["water_level"]
 					cycle_type = data["cycle_type"]
 					if (DevicesModule.data("display_network_state") == "offline"):
-						print('Cycle job skipping, main controller is  offline...')
-						working = False
+						print('Cycle job skipping, main controller is offline...')
+						#working = False
 						continue
-					#if (DevicesModule.data("water_tester_network_state") == "offline"):
-					#	print('Cycle job skipping, water tester is  offline...')
-					#	working = False
-					#	continue
 					if (ValuesModule.data("feeding_pump_state") == True):
 						if (working == False):	# the pump started before the cycle
 							if (feeding_wait_time == 0):
@@ -110,25 +106,53 @@ class WaterCycleModule:
 							ValuesModule.set("drain_pump_state", False)
 							working = True
 					elif (water_level >= 75 and working == True):
-						print("Cycle job ending, water reached 75%...")
+						print("Cycle job water reached 75%...")
 						ValuesModule.set("water_valve_state", False)
 						self._mqtt.publish( config.misc[ "roomID" ] + "/water-valve" , "0" )
-						if (start_com == True):
-							self._values[ "cycle_topup" ] = 0
-							if(data["ppm"] <= config.misc["cycle_min_ppm"]):
-								start_com = False
+						if (DevicesModule.data("water_tester_network_state") == "offline"):
+							print('Cycle job skipping, cannot check ppm. Water tester is offline...')
+							#working = True
+							#continue
 						else:
-							self._values[ "cycle_topup" ] = 0 if config.misc["cycle_topup_value"]  <= int(data["topup"]) else int(data["topup"]) + 1
-						if(self._values[ "cycle_topup" ] == 0 and data["ppm"] > config.misc["cycle_min_ppm"]):
-							print("Cycle job ppm too high, draining water tank again...")
-							self._mqtt.publish(config.misc[ "roomID" ] + "/drain-pump" , "1")
-							ValuesModule.set("drain_pump_state", True)
-							working = True
-						else:
-							print("Cycle job ppm ok, saving to db")
-							working = False
-							self._connection.cursor( ).execute("UPDATE cycle SET refill_number = " + str(self._values[ "cycle_topup" ]) + " WHERE id = (SELECT MAX(id) FROM cycle)")
-						self._connection.commit( )
+							if (start_com == True):
+								self._values[ "cycle_topup" ] = 0
+								if(data["ppm"] <= config.misc["cycle_min_ppm"]):
+									start_com = False
+							else:
+								self._values[ "cycle_topup" ] = 0 if config.misc["cycle_topup_value"]  <= int(data["topup"]) else int(data["topup"]) + 1
+							if (self._values[ "cycle_topup" ] == 0 and data["ppm"] > config.misc["cycle_min_ppm"]):
+								print("Cycle job ppm too high, draining water tank again...")
+								self._mqtt.publish(config.misc[ "roomID" ] + "/drain-pump" , "1")
+								ValuesModule.set("drain_pump_state", True)
+								#working = True
+								#continue
+							elif (cycle_type != "water" and DevicesModule.data("doser_one_network_state") == "offline"):
+								print('Cycle job skipping, doser one is offline...')
+								#working = True
+								#continue
+							else:
+								if ( cycle_type != "water"):
+									self._mqtt.publish(config.misc[ "roomID" ] + "/mixing-pump" , "1")
+									dose = config.misc["full_dose"]
+									vitamins = 20
+									if ( cycle_type == "half"):
+										dose = config.misc["full_dose"] //2
+									elif (cycle_type == "quarter"):
+										dose = full_dose //4
+									if (self._values[ "cycle_topup" ]  > 0):
+										dose = dose //2
+										vitamins = vitamins //2
+									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-one" , dose)
+									time.sleep(45 )
+									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-two" , dose)
+									time.sleep( 45 )
+									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-three" , dose)
+									time.sleep( 45 )
+									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-four" , vitamins)
+								print("Cycle job finished. PPM ok, saving to db")
+								working = False
+								self._connection.cursor( ).execute("UPDATE cycle SET refill_number = " + str(self._values[ "cycle_topup" ]) + " WHERE id = (SELECT MAX(id) FROM cycle)")
+								self._connection.commit( )
 					elif ( water_level < 25 and working == True):
 						print('Cycle job empty and refill, starting to refill the tank')
 						self._mqtt.publish(config.misc[ "roomID" ] + "/drain-pump" , "0")
