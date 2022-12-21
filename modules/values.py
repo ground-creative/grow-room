@@ -28,6 +28,8 @@ class ValuesModule:
 		ValuesModule._values[ "water_tester_oled" ] = bool(row["water_tester_oled"])
 		ValuesModule._values[ "air_sen_night_mode" ] = bool(row["air_sen_night_mode"])
 		ValuesModule._values[ "water_tester_night_mode" ] = bool(row["water_tester_night_mode"])
+		ValuesModule._values[ "doser_one_night_mode" ] = bool(row["doser_one_night_mode"])
+		ValuesModule._values[ "doser_two_night_mode" ] = bool(row["doser_two_night_mode"])
 		ValuesModule._values[ "pause_cycle" ] = bool(row[ "pause_cycle"])
 	def data(key =  None):
 		if (key is None):

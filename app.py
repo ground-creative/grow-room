@@ -32,8 +32,8 @@ cursor = connection.cursor( )
 row = cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' AND name='dp'" ).fetchone( )
 if ( row is None ):
 	logging.info( "Setting up sqlite dp table" )
-	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, water_tester_oled INTEGER, air_Sen_night_mode INTEGER, water_tester_night_mode INTEGER, pause_cycle INTEGER)")
-	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, True, False, False, 0)") 
+	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, water_tester_oled INTEGER, air_Sen_night_mode INTEGER, water_tester_night_mode INTEGER, doser_one_night_mode INTEGER, doser_two_night_mode INTEGER, pause_cycle INTEGER)")
+	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, True, False, False, False, False, 0)") 
 	connection.commit()
 row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='devices'").fetchone()
 if (row is None):

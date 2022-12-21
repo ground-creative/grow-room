@@ -86,8 +86,11 @@ class TuyaModule:
 				self._cycle.resume()
 		# Restart	
 		elif (key == config.dps["restart"]):
+			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))
 			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))	
-			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))			
+			self._mqtt.publish(config.misc["roomID"] + "/water-tester-restart", int(dps[key]))	
+			self._mqtt.publish(config.misc["roomID"] + "/doser-one-restart", int(dps[key]))	
+			self._mqtt.publish(config.misc["roomID"] + "/doser-two-restart", int(dps[key]))			
 		# Relays states
 		elif (isinstance(dps[key], (bool))):
 			for function in config.dps:
@@ -129,6 +132,10 @@ class TuyaModule:
 		dps[config.dps["con_lcd"]] = data["con_lcd"]
 		dps[config.dps["air_sen_oled"]] = data["air_sen_oled"]
 		dps[config.dps["water_tester_oled"]] = data["water_tester_oled"]
+		dps[config.dps["air_sen_night_mode"]] = data["air_sen_night_mode"]
+		dps[config.dps["water_tester_night_mode"]] = data["water_tester_night_mode"]
+		dps[config.dps["doser_one_night_mode"]] = data["doser_one_night_mode"]
+		dps[config.dps["doser_two_night_mode"]] = data["doser_two_night_mode"]
 		dps[config.dps["cycle_type"]] = data["cycle_type"]
 		dps[config.dps["pause_cycle"]] = data["pause_cycle"]
 		dps[config.dps["cycle_job"]] = data["cycle_job"]
@@ -140,5 +147,6 @@ class TuyaModule:
 		dps[config.dps["display_network_state"]] = devices["display_network_state"]
 		dps[config.dps["airsensors_network_state"]] = devices["airsensors_network_state"]
 		dps[config.dps["doser_one_network_state"]] = devices["doser_one_network_state"]
+		dps[config.dps["doser_two_network_state"]] = devices["doser_two_network_state"]
 		dps[config.dps["water_tester_network_state"]] = devices["water_tester_network_state"]
 		return dps

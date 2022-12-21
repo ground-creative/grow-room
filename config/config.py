@@ -62,5 +62,7 @@ dps = {
 	"cycle_days": "122" ,
 	"cycle_week": "123",
 	"air_sen_night_mode": "132" ,
-	"water_tester_night_mode": "133"
+	"water_tester_night_mode": "133" ,
+	"doser_one_night_mode": "140" ,
+	"doser_two_night_mode": "141"
 }
