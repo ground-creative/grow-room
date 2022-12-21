@@ -13,6 +13,8 @@ class MqttModule:
 		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-main-controller" )
 		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-air-sensors" )
 		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-doser-one" )
+		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-doser-two" )
+		mosq.subscribe( "device-status/" + config.misc[ "roomID" ] + "-water-tester" )
 		mosq.subscribe( "m/" + config.misc[ "roomID" ] + "/#" )
 	def  on_mqtt_message( mosq, userdata, msg ):
 		logging.info( "MQTT Uncaught Message Received: " + str( msg.topic ) + " -> "  + str( msg.payload.decode( "utf-8" ) ) )
@@ -25,6 +27,10 @@ class MqttModule:
 			DevicesModule.set( "airsensors_network_state", state, config.misc[ "roomID" ] + "-air-sensors" )	
 		if ( "device-status/" + config.misc[ "roomID" ] + "-doser-one" == msg.topic ):
 			DevicesModule.set( "doser_one_network_state", state, config.misc[ "roomID" ] + "-doser-one" )	
+		if ( "device-status/" + config.misc[ "roomID" ] + "-doser-two" == msg.topic ):
+			DevicesModule.set( "doser_two_network_state", state, config.misc[ "roomID" ] + "-doser-two" )
+		if ( "device-status/" + config.misc[ "roomID" ] + "-water-tester" == msg.topic ):
+			DevicesModule.set( "water_tester_network_state", state, config.misc[ "roomID" ] + "-water-tester" )
 	def on_device_manual_action( mosq, userdata, msg ):
 		value = msg.payload.decode( "utf-8" )
 		logging.info( "MQTT Device Manual Action: "  + msg.topic + " -> " + str( value ) )

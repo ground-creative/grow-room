@@ -11,7 +11,8 @@ misc = {
 	"debug_level": "DEBUG",
 	"roomID": "" ,
 	"cycle_topup_value": 2 ,
-	"cycle_min_ppm": 200
+	"cycle_min_ppm": 200,
+	"full_dose": 40
 }
 
 sqlite = {
@@ -37,6 +38,8 @@ dps = {
 	"display_network_state": "117" ,
 	"airsensors_network_state": "136" ,
 	"doser_one_network_state": "128" ,
+	"doser_two_network_state": "134" ,
+	"water_tester_network_state": "130" ,
 	"cur_water_level": "109",
 	"new_water_level": "113" ,
 	"in_temp": "102" ,
@@ -49,6 +52,7 @@ dps = {
 	"ec": "111" ,
 	"con_lcd": "104" ,
 	"air_sen_oled": "127" ,
+	"water_tester_oled": "131" ,
 	"restart": "126" ,
 	"cycle_job": "120" ,
 	"cycle_topup": "124" ,
@@ -56,5 +60,7 @@ dps = {
 	"cycle_type": "119" ,
 	"cycle_start_date": "121" ,
 	"cycle_days": "122" ,
-	"cycle_week": "123"
+	"cycle_week": "123",
+	"air_sen_night_mode": "132" ,
+	"water_tester_night_mode": "133"
 }

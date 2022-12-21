@@ -16,6 +16,10 @@ class DevicesModule:
 				DevicesModule._values[ "airsensors_network_state" ] = device[ "state" ]
 			if device[ "id" ] == config.misc[ "roomID" ] + "-doser-one":
 				DevicesModule._values[ "doser_one_network_state" ] = device[ "state" ]
+			if device[ "id" ] == config.misc[ "roomID" ] + "-doser-two":
+				DevicesModule._values[ "doser_two_network_state" ] = device[ "state" ]
+			if device[ "id" ] == config.misc[ "roomID" ] + "-water-tester":
+				DevicesModule._values[ "water_tester_network_state" ] = device[ "state" ]
 	def data( key =  None ):
 		if ( key is None ):
 			return DevicesModule._values

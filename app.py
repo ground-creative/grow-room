@@ -2,7 +2,7 @@
 #
 # Grow system MQTT tuya cloud client
 # Author: Carlo Pietrobattista
-# Version:1.0
+# Version:1.0.1
 
 import config.config as config
 import time
@@ -32,17 +32,18 @@ cursor = connection.cursor( )
 row = cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' AND name='dp'" ).fetchone( )
 if ( row is None ):
 	logging.info( "Setting up sqlite dp table" )
-	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, pause_cycle INTEGER)")
-	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, 0)") 
+	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, water_tester_oled INTEGER, air_Sen_night_mode INTEGER, water_tester_night_mode INTEGER, pause_cycle INTEGER)")
+	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, True, False, False, 0)") 
 	connection.commit()
 row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='devices'").fetchone()
 if (row is None):
 	logging.info("Setting up sqlite devices table")
 	cursor.execute("CREATE TABLE devices (id REAL,state REAL,last_seen INTEGER,last_alert INTEGER)" )
-	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-main-controller','online', NULL,NULL)")
-	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-air-sensors','online', NULL,NULL)")
-	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-water-tester','online', NULL,NULL)")
-	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-doser-one','online', NULL,NULL)")
+	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-main-controller','offline', NULL,NULL)")
+	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-air-sensors','offline', NULL,NULL)")
+	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-water-tester','offline', NULL,NULL)")
+	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-doser-one','offline', NULL,NULL)")
+	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-doser-two','offline', NULL,NULL)")
 	connection.commit()
 row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cycle'" ).fetchone()	
 if ( row is None ):

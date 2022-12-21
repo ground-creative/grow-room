@@ -63,7 +63,11 @@ class TuyaModule:
 		# Air sensors oled backlight
 		elif (key == config.dps["air_sen_oled"]):
 			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-display-backlight", int(dps[key]))
-			ValuesModule.set("air_sen_oled", dps[key])		
+			ValuesModule.set("air_sen_oled", dps[key])	
+		# water tester oled backlight
+		elif (key == config.dps["water_tester_oled"]):
+			self._mqtt.publish(config.misc["roomID"] + "/water-tester-display-backlight", int(dps[key]))
+			ValuesModule.set("water_tester_oled", dps[key])			
 		# Cycle on/off
 		elif (key == config.dps["cycle_job"]):
 			if (dps[key] == True):
@@ -82,11 +86,8 @@ class TuyaModule:
 				self._cycle.resume()
 		# Restart	
 		elif (key == config.dps["restart"]):
-			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))
-			self._mqtt.publish(config.misc["roomID"] + "/water-tester-restart", int(dps[key]))
-			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))	
-			self._mqtt.publish(config.misc["roomID"] + "/doser-one-restart", int(dps[key]))
-			self._mqtt.publish(config.misc["roomID"] + "/doser-two-restart", int(dps[key]))
+			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))	
+			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))			
 		# Relays states
 		elif (isinstance(dps[key], (bool))):
 			for function in config.dps:
@@ -127,6 +128,7 @@ class TuyaModule:
 		dps[config.dps["ec"]] = data["ec"]
 		dps[config.dps["con_lcd"]] = data["con_lcd"]
 		dps[config.dps["air_sen_oled"]] = data["air_sen_oled"]
+		dps[config.dps["water_tester_oled"]] = data["water_tester_oled"]
 		dps[config.dps["cycle_type"]] = data["cycle_type"]
 		dps[config.dps["pause_cycle"]] = data["pause_cycle"]
 		dps[config.dps["cycle_job"]] = data["cycle_job"]
