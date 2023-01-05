@@ -23,7 +23,7 @@ python3 app.py
 1. Save the file config/config.py and repeat installation procedure
 2. Replace config file
 
-## Screenshots
+## Smart Life App Screenshots
 
 ![My Image](screenshots/photo_6176733747488077186_y.jpg)
 
