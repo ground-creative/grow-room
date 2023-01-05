@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #
 # Grow system MQTT tuya cloud client
-# Author: Carlo Pietrobattista
-# Version:1.0.1
+# Author: Ground Creative
+# Version:1.1.0
 
 import config.config as config
 import time
@@ -20,20 +20,20 @@ from modules.values import ValuesModule
 from modules.devices import DevicesModule
 from modules.cycle import WaterCycleModule
 # Logging
-coloredlogs.install( level = config.misc[ "debug_level" ] )
+coloredlogs.install(level = config.misc["debug_level"])
 # Sqlite
-connection = sqlite3.connect( config.sqlite[ "dbname" ]  + ".db", check_same_thread = False )
+connection = sqlite3.connect(config.sqlite["dbname"]  + ".db", check_same_thread = False)
 connection.row_factory = sqlite3.Row
-cursor = connection.cursor( )
+cursor = connection.cursor()
 #cursor.execute("DROP TABLE IF EXISTS dp")
 #cursor.execute("DROP TABLE IF EXISTS devices")
 #cursor.execute( "DROP TABLE IF EXISTS cycle" )
 #connection.commit()
-row = cursor.execute( "SELECT name FROM sqlite_master WHERE type='table' AND name='dp'" ).fetchone( )
-if ( row is None ):
-	logging.info( "Setting up sqlite dp table" )
-	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, water_tester_oled INTEGER, air_Sen_night_mode INTEGER, water_tester_night_mode INTEGER, doser_one_night_mode INTEGER, doser_two_night_mode INTEGER, pause_cycle INTEGER)")
-	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, True, False, False, False, False, 0)") 
+row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='dp'").fetchone()
+if (row is None):
+	logging.info("Setting up sqlite dp table")
+	cursor.execute("CREATE TABLE dp (lights_state INTEGER,water_valve_state INTEGER, drain_pump_state INTEGER, feeding_pump_state INTEGER, mixing_pump_state INTEGER, fan_state INTEGER, extractor_state INTEGER, airco_state INTEGER, cur_water_level INTEGER, con_lcd INTEGER, air_sen_oled INTEGER, water_tester_oled INTEGER, main_con_night_mode INTEGER, air_sen_night_mode INTEGER, water_tester_night_mode INTEGER, doser_one_night_mode INTEGER, doser_two_night_mode INTEGER, doser_one_pump_one_name TEXT, doser_one_pump_two_name TEXT, doser_one_pump_three_name TEXT, doser_one_pump_four_name TEXT, doser_one_pump_five_name TEXT, doser_one_pump_six_name TEXT, doser_one_pump_one_dose INTEGER, doser_one_pump_two_dose INTEGER, doser_one_pump_three_dose INTEGER, doser_one_pump_four_dose INTEGER, doser_one_pump_five_dose INTEGER, doser_one_pump_six_dose INTEGER, cycle_min_ppm INTEGER, dose_sleep_time INTEGER, cycle_topup_value INTEGER, pause_cycle INTEGER)")
+	cursor.execute("INSERT INTO dp VALUES (False, False, False, False, False, False, False, False, 0, True, True, True, False, False, False, False, False, 'D1 Pump 1', 'D1 Pump 2', 'D1 Pump 3', 'D1 Pump 4', 'D1 Pump 5', 'D1 Pump 6', 0, 0, 0, 0, 0, 0, 200, 30, 2, 0)") 
 	connection.commit()
 row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='devices'").fetchone()
 if (row is None):
@@ -46,10 +46,10 @@ if (row is None):
 	cursor.execute("INSERT INTO devices VALUES ('" + config.misc[ "roomID" ] + "-doser-two','offline', NULL,NULL)")
 	connection.commit()
 row = cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='cycle'" ).fetchone()	
-if ( row is None ):
+if (row is None):
 	logging.info("Setting up sqlite cycle table")
 	cursor.execute("CREATE TABLE cycle (id INTEGER PRIMARY KEY AUTOINCREMENT,cycle INTEGER, cycle_type REAL,date_start INTEGER, date_stop INTEGER, refill_number INTEGER, refill_value INTEGER)")
-	cursor.execute( "INSERT INTO cycle VALUES (1,False,'water','','',0,2)") 	
+	cursor.execute("INSERT INTO cycle VALUES (1,False,'water','','',0,2)") 	
 	connection.commit()
 # Set devices states
 DevicesModule.set_current(connection)
@@ -80,5 +80,5 @@ while True:
 	values = Tuya.values(ValuesModule.data())
 	Tuya.client.push_dps(values)
 	logging.info("Pushing loop dps data from loop: %s", values)
-	mqtt_client.publish(config.misc[ "roomID" ] + "/water-level" , json.dumps( { "level": ValuesModule.data("cur_water_level")}))
-	time.sleep( config.tuya[ "update_interval" ] )
+	mqtt_client.publish(config.misc["roomID"] + "/water-level" , json.dumps({"level": ValuesModule.data("cur_water_level")}))
+	time.sleep(config.tuya["update_interval"])

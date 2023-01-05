@@ -17,7 +17,7 @@ class WaterCycleModule:
 		cursor = self._connection.cursor()
 		self._values = {}
 		self.update_values(True)
-		if ( self._values[ "cycle_job" ] == True and ValuesModule.data("pause_cycle") == True ):
+		if (self._values["cycle_job"] == True and ValuesModule.data("pause_cycle") == True):
 			self.send_queue("pause")
 		else:
 			self.send_queue("boot")
@@ -46,7 +46,7 @@ class WaterCycleModule:
 						ValuesModule.set("water_valve_state", False)
 						ValuesModule.set("drain_pump_state", False)
 				if (data["com"] == "resume"):
-					print( 'Resuming water cycle job' )
+					print('Resuming water cycle job')
 					pause = False
 				if (data["cycle"] == 0):
 					pause = False
@@ -70,7 +70,7 @@ class WaterCycleModule:
 							continue
 						else:	# the cycle started before the pump
 							ValuesModule.set("feeding_pump_state", False)
-							self._mqtt.publish(config.misc[ "roomID" ] + "/feeding-pump"  , "0")
+							self._mqtt.publish(config.misc[ "roomID" ] + "/feeding-pump", "0")
 					elif (feeding_wait_time > 0):
 						print('Cycle job is waiting...')
 						waiting_time_left = time.time() - feeding_wait_time
@@ -84,7 +84,7 @@ class WaterCycleModule:
 						ValuesModule.set("feeding_pump_state", False)
 						self._mqtt.publish(config.misc[ "roomID" ] + "/feeding-pump"  , "0")
 					if (water_level < 50 and working == False):
-						if (config.misc["cycle_topup_value"]  <= int(data["topup"]) and water_level > 0):
+						if (ValuesModule.data("cycle_topup_value")  <= int(data["topup"]) and water_level > 0):
 							print('Cycle job empty and refill, starting to drain water')
 							self._mqtt.publish(config.misc[ "roomID" ] + "/drain-pump"  , "1")
 							self._mqtt.publish(config.misc[ "roomID" ] + "/water-valve"  , "0")
@@ -93,7 +93,7 @@ class WaterCycleModule:
 							ValuesModule.set("feeding_pump_state", False)
 							ValuesModule.set("drain_pump_state", True)
 							working = True
-						elif (config.misc["cycle_topup_value"]  > int(data["topup"])):
+						elif (ValuesModule.data("cycle_topup_value")  > int(data["topup"])):
 							if (start_com == True):
 								print('Cycle job refill ' + str(int(data["topup"])))
 							else:
@@ -116,11 +116,11 @@ class WaterCycleModule:
 						else:
 							if (start_com == True):
 								self._values[ "cycle_topup" ] = 0
-								if(data["ppm"] <= config.misc["cycle_min_ppm"]):
+								if(data["ppm"] <= ValuesModule.data("cycle_min_ppm")):
 									start_com = False
 							else:
-								self._values[ "cycle_topup" ] = 0 if config.misc["cycle_topup_value"]  <= int(data["topup"]) else int(data["topup"]) + 1
-							if (self._values[ "cycle_topup" ] == 0 and data["ppm"] > config.misc["cycle_min_ppm"]):
+								self._values[ "cycle_topup" ] = 0 if ValuesModule.data("cycle_topup_value")  <= int(data["topup"]) else int(data["topup"]) + 1
+							if (self._values[ "cycle_topup" ] == 0 and data["ppm"] > ValuesModule.data("cycle_min_ppm")):
 								print("Cycle job ppm too high, draining water tank again...")
 								self._mqtt.publish(config.misc[ "roomID" ] + "/drain-pump" , "1")
 								ValuesModule.set("drain_pump_state", True)
@@ -131,24 +131,32 @@ class WaterCycleModule:
 								#working = True
 								#continue
 							else:
-								if ( cycle_type != "water"):
+								if (cycle_type != "water" and cycle_type != "schedule"):
 									self._mqtt.publish(config.misc[ "roomID" ] + "/mixing-pump" , "1")
-									dose = config.misc["full_dose"]
-									vitamins = 20
-									if ( cycle_type == "half"):
-										dose = config.misc["full_dose"] //2
-									elif (cycle_type == "quarter"):
-										dose = full_dose //4
-									if (self._values[ "cycle_topup" ]  > 0):
-										dose = dose //2
-										vitamins = vitamins //2
-									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-one" , dose)
-									time.sleep(45 )
-									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-two" , dose)
-									time.sleep( 45 )
-									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-three" , dose)
-									time.sleep( 45 )
-									self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-four" , vitamins)
+									if (ValuesModule.data("doser_one_pump_one_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_one_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-one" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
+									if (ValuesModule.data("doser_one_pump_two_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_two_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-two" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
+									if (ValuesModule.data("doser_one_pump_three_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_three_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-three" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
+									if (ValuesModule.data("doser_one_pump_four_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_four_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-four" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
+									if (ValuesModule.data("doser_one_pump_five_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_five_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-five" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
+									if (ValuesModule.data("doser_one_pump_six_dose") > 0):
+										dose = self.calculate_dose(ValuesModule.data("doser_one_pump_six_dose"))
+										self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-six" , dose)
+										time.sleep(ValuesModule.data("dose_sleep_time"))
 								print("Cycle job finished. PPM ok, saving to db")
 								working = False
 								self._connection.cursor( ).execute("UPDATE cycle SET refill_number = " + str(self._values[ "cycle_topup" ]) + " WHERE id = (SELECT MAX(id) FROM cycle)")
@@ -177,7 +185,7 @@ class WaterCycleModule:
 				logging.exception( e )
 	def update_values(self,all = None):
 		if (all is not None):
-			row = self._connection.cursor().execute( "SELECT * FROM cycle ORDER by id DESC LIMIT 1" ).fetchone( )
+			row = self._connection.cursor().execute("SELECT * FROM cycle ORDER by id DESC LIMIT 1").fetchone()
 			#self._values = {}
 			self._values["cycle_job"] = bool(row["cycle"])
 			self._values["cycle_type"] = row[ "cycle_type"]
@@ -188,7 +196,7 @@ class WaterCycleModule:
 			self._values["cycle_topup"] = 0 if self._values["cycle_job"] == False else row["refill_number"]
 		logging.info("Updating cycle values")
 		date_format = "%Y-%m-%d %H:%M:%S.%f"
-		convert_date = datetime.strptime(self._values["date_start"], date_format )
+		convert_date = datetime.strptime(self._values["date_start"], date_format)
 		self._values["cycle_start_date"] = convert_date.strftime('%d') +' ' + convert_date.strftime("%b")  if self._values["cycle_job"] == True else ""
 		adate = convert_date #datetime.strptime( row[ "date_start" ] , date_format )
 		bdate = datetime.strptime(str(datetime.now()), date_format)
@@ -201,39 +209,49 @@ class WaterCycleModule:
 		ValuesModule.set("cycle_start_date", self._values["cycle_start_date"], False)
 		ValuesModule.set("cycle_days", self._values["cycle_days"], False)
 		ValuesModule.set("cycle_week", self._values["cycle_week"], False)
-	def data(self, key =  None):
+	def data(self, key = None):
 		if (key is None):
 			return self._values
 		return self._values[key]		
 	def turn_on(self):
 		logging.info( "Switching on cycle job.." )
 		date = datetime.now( )
-		self._connection.cursor().execute( "INSERT INTO cycle VALUES ((SELECT MAX(id) FROM cycle)+1,1,'" + self._values["cycle_type"] + "','" + str( date ) + "','',0," + str(config.misc["cycle_topup_value"]) + ")" ) 
+		self._connection.cursor().execute("INSERT INTO cycle VALUES ((SELECT MAX(id) FROM cycle)+1,1,'" + self._values["cycle_type"] + "','" + str(date) + "','',0," + str(ValuesModule.data("cycle_topup_value")) + ")") 
 		self._connection.commit( )
 		self.update_values(True)
 		self.send_queue("start")
 	def turn_off(self):
-		logging.info( "Switching off cycle job.." )
-		date = datetime.now( )
-		self._connection.cursor().execute( "UPDATE cycle SET cycle = 0, date_stop = '" + str( date ) + "' WHERE id = (SELECT MAX(id) FROM cycle)" )
-		self._connection.commit( )
+		logging.info("Switching off cycle job..")
+		date = datetime.now()
+		self._connection.cursor().execute("UPDATE cycle SET cycle = 0, date_stop = '" + str(date) + "' WHERE id = (SELECT MAX(id) FROM cycle)")
+		self._connection.commit()
 		self.update_values(True)
 		ValuesModule.set("pause_cycle", False)
 		self.send_queue("stop")
 	def change_type(self,type):
 		logging.info("Changing cycle type to " + type)
 		self._values["cycle_type"] = type
-		self._connection.cursor( ).execute( "UPDATE cycle SET cycle_type = '" + self._values["cycle_type"] + "' WHERE id = (SELECT MAX(id) FROM cycle)" )
-		self._connection.commit( )
+		self._connection.cursor().execute("UPDATE cycle SET cycle_type = '" + self._values["cycle_type"] + "' WHERE id = (SELECT MAX(id) FROM cycle)")
+		self._connection.commit()
 		self.update_values();
 	def pause(self):
 		logging.info("Pausing cycle")
 		ValuesModule.set("pause_cycle", True)
 		self.send_queue("pause")
 	def resume(self):
-		logging.info("Resuimng cycle")
+		logging.info("Resuming cycle")
 		ValuesModule.set("pause_cycle", False)
 		self.send_queue("resume")
+	def calculate_dose(self, fullDose):
+		if (self._values["cycle_type"] == "half"):
+			dose = fullDose//2
+		elif (self._values["cycle_type"] == "quarter"):
+			dose = fullDose//4
+		else:
+			dose = fullDose
+		if (self._values[ "cycle_topup" ]  > 0):
+			dose = dose//2
+		return dose
 	def send_queue(self, command, update = None):
 		cyle_queue = '{"cycle": ' + str(int(self._values["cycle_job"])) + ',"water_level": ' + str(ValuesModule.data("cur_water_level")) + ',"cycle_type": "' + self._values["cycle_type"] + '","topup": "' + str(self._values["cycle_topup"]) + '","ppm": ' + str(ValuesModule.data("ppm")) + ',"com": "' + command + '"}'
 		logging.info("Sending cycle queue %s" , cyle_queue)

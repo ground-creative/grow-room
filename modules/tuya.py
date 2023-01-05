@@ -12,6 +12,19 @@ import time
 class TuyaModule:
 	def __init__( self, productid, uuid, authkey, mqttClient, CycleModule ):
 		self.client = TuyaClient( productid, uuid, authkey )
+
+from tuyalinksdk.client import TuyaClient
+from tuyalinksdk.console_qrcode import qrcode_generate
+from modules.values import ValuesModule
+from modules.devices import DevicesModule
+import config.config as config
+import logging
+import json
+import time
+
+class TuyaModule:
+	def __init__( self, productid, uuid, authkey, mqttClient, CycleModule ):
+		self.client = TuyaClient( productid, uuid, authkey )
 		self.client.on_connected = self.on_connected
 		self.client.on_qrcode = self.on_qrcode
 		self.client.on_reset = self.on_reset
@@ -84,13 +97,77 @@ class TuyaModule:
 			# Resume Paused Cycle	
 			elif (dps[key] == False):
 				self._cycle.resume()
+		# Cycle minimum ppm
+		elif (key == config.dps["cycle_min_ppm"]):
+			ValuesModule.set("cycle_min_ppm", dps[key])	
+		# Cycle dosing pumps sleep time
+		elif (key == config.dps["dose_sleep_time"]):
+			ValuesModule.set("dose_sleep_time", dps[key])		
+		# Cycle topup value
+		elif (key == config.dps["cycle_topup_value"]):
+			ValuesModule.set("cycle_topup_value", dps[key])		
+		# Doser pumps manual mode
+		elif (key == config.dps["doser_one_m_pump_one"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-one" , int(dps[key]))	
+		elif (key == config.dps["doser_one_m_pump_two"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-two" , int(dps[key]))	
+		elif (key == config.dps["doser_one_m_pump_three"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-three" , int(dps[key]))	
+		elif (key == config.dps["doser_one_m_pump_four"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-four" , int(dps[key]))	
+		elif (key == config.dps["doser_one_m_pump_five"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-five" , int(dps[key]))	
+		elif (key == config.dps["doser_one_m_pump_six"]):
+			self._mqtt.publish( config.misc[ "roomID" ] + "/doser-one/p-six" , int(dps[key]))				
 		# Restart	
 		elif (key == config.dps["restart"]):
 			self._mqtt.publish(config.misc["roomID"] + "/main-controller-restart", int(dps[key]))
 			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-restart", int(dps[key]))	
 			self._mqtt.publish(config.misc["roomID"] + "/water-tester-restart", int(dps[key]))	
 			self._mqtt.publish(config.misc["roomID"] + "/doser-one-restart", int(dps[key]))	
-			self._mqtt.publish(config.misc["roomID"] + "/doser-two-restart", int(dps[key]))			
+			self._mqtt.publish(config.misc["roomID"] + "/doser-two-restart", int(dps[key]))		
+		# Night Mode
+		elif (key == config.dps["main_con_night_mode"]):
+			self._mqtt.publish(config.misc["roomID"] + "/main-controller-night-mode", int(dps[key]))
+			ValuesModule.set("main_con_night_mode", dps[ key ])
+		elif (key == config.dps["air_sen_night_mode"]):
+			self._mqtt.publish(config.misc["roomID"] + "/air-sensors-night-mode", int(dps[key]))
+			ValuesModule.set("air_sen_night_mode", dps[ key ])
+		elif (key == config.dps["water_tester_night_mode"]):
+			self._mqtt.publish(config.misc["roomID"] + "/water-tester-night-mode", int(dps[key]))
+			ValuesModule.set("water_tester_night_mode", dps[ key ])
+		elif (key == config.dps["doser_one_night_mode"]):
+			self._mqtt.publish(config.misc["roomID"] + "/doser-one-night-mode", int(dps[key]))
+			ValuesModule.set("doser_one_night_mode", dps[ key ])
+		elif (key == config.dps["doser_two_night_mode"]):
+			self._mqtt.publish(config.misc["roomID"] + "/doser-two-night-mode", int(dps[key]))
+			ValuesModule.set("doser_two_night_mode", dps[ key ])
+		# Doser pumps doses
+		elif (config.dps["doser_one_pump_one_dose"] in dps):
+			ValuesModule.set("doser_one_pump_one_dose", dps[ key ])
+		elif (config.dps["doser_one_pump_two_dose"] in dps):
+			ValuesModule.set("doser_one_pump_two_dose", dps[ key ])
+		elif (config.dps["doser_one_pump_three_dose"] in dps):
+			ValuesModule.set("doser_one_pump_three_dose", dps[ key ])
+		elif (config.dps["doser_one_pump_four_dose"] in dps):
+			ValuesModule.set("doser_one_pump_four_dose", dps[ key ])
+		elif (config.dps["doser_one_pump_five_dose"] in dps):
+			ValuesModule.set("doser_one_pump_five_dose", dps[ key ])
+		elif (config.dps["doser_one_pump_six_dose"] in dps):
+			ValuesModule.set("doser_one_pump_six_dose", dps[ key ])
+		# Doser pumps names
+		elif (config.dps["doser_one_pump_one_name"] in dps):
+			ValuesModule.set("doser_one_pump_one_name", dps[ key ])
+		elif (config.dps["doser_one_pump_two_name"] in dps):
+			ValuesModule.set("doser_one_pump_two_name", dps[ key ])
+		elif (config.dps["doser_one_pump_three_name"] in dps):
+			ValuesModule.set("doser_one_pump_three_name", dps[ key ])
+		elif (config.dps["doser_one_pump_four_name"] in dps):
+			ValuesModule.set("doser_one_pump_four_name", dps[ key ])
+		elif (config.dps["doser_one_pump_five_name"] in dps):
+			ValuesModule.set("doser_one_pump_five_name", dps[ key ])
+		elif (config.dps["doser_one_pump_six_name"] in dps):
+			ValuesModule.set("doser_one_pump_six_name", dps[ key ])
 		# Relays states
 		elif (isinstance(dps[key], (bool))):
 			for function in config.dps:
@@ -128,10 +205,12 @@ class TuyaModule:
 		dps[config.dps["water_temp"]] = data["water_temp"]
 		dps[config.dps["ph"]] = data["ph"]
 		dps[config.dps["ppm"]] = data["ppm"]
+		dps[config.dps["sal"]] = data["sal"]
 		dps[config.dps["ec"]] = data["ec"]
 		dps[config.dps["con_lcd"]] = data["con_lcd"]
 		dps[config.dps["air_sen_oled"]] = data["air_sen_oled"]
 		dps[config.dps["water_tester_oled"]] = data["water_tester_oled"]
+		dps[config.dps["main_con_night_mode"]] = data["main_con_night_mode"]
 		dps[config.dps["air_sen_night_mode"]] = data["air_sen_night_mode"]
 		dps[config.dps["water_tester_night_mode"]] = data["water_tester_night_mode"]
 		dps[config.dps["doser_one_night_mode"]] = data["doser_one_night_mode"]
@@ -143,6 +222,21 @@ class TuyaModule:
 		dps[config.dps["cycle_days"]] = data["cycle_days"]
 		dps[config.dps["cycle_week"]] = data["cycle_week"]
 		dps[config.dps["cycle_topup"]] = data["cycle_topup"]
+		dps[config.dps["cycle_min_ppm"]] = data["cycle_min_ppm"]
+		dps[config.dps["dose_sleep_time"]] = data["dose_sleep_time"]
+		dps[config.dps["cycle_topup_value"]] = data["cycle_topup_value"]
+		dps[config.dps["doser_one_pump_one_name"]] = data["doser_one_pump_one_name"]
+		dps[config.dps["doser_one_pump_two_name"]] = data["doser_one_pump_two_name"]
+		dps[config.dps["doser_one_pump_three_name"]] = data["doser_one_pump_three_name"]
+		dps[config.dps["doser_one_pump_four_name"]] = data["doser_one_pump_four_name"]
+		dps[config.dps["doser_one_pump_five_name"]] = data["doser_one_pump_five_name"]
+		dps[config.dps["doser_one_pump_six_name"]] = data["doser_one_pump_six_name"]
+		dps[config.dps["doser_one_pump_one_dose"]] = data["doser_one_pump_one_dose"]
+		dps[config.dps["doser_one_pump_two_dose"]] = data["doser_one_pump_two_dose"]
+		dps[config.dps["doser_one_pump_three_dose"]] = data["doser_one_pump_three_dose"]
+		dps[config.dps["doser_one_pump_four_dose"]] = data["doser_one_pump_four_dose"]
+		dps[config.dps["doser_one_pump_five_dose"]] = data["doser_one_pump_five_dose"]
+		dps[config.dps["doser_one_pump_six_dose"]] = data["doser_one_pump_six_dose"]
 		# devices network states
 		dps[config.dps["display_network_state"]] = devices["display_network_state"]
 		dps[config.dps["airsensors_network_state"]] = devices["airsensors_network_state"]
