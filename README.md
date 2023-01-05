@@ -26,7 +26,11 @@ python3 app.py
 ## Screenshots
 
 ![My Image](screenshots/photo_6176733747488077186_y.jpg)
+
 ![My Image](screenshots/photo_6176733747488077187_y.jpg)
+
 ![My Image](screenshots/photo_6176733747488077184_y.jpg)
+
 ![My Image](screenshots/photo_6176733747488077185_y.jpg)
+
 ![My Image](screenshots/photo_6176733747488077183_y.jpg)
