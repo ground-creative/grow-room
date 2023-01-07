@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import config.config as config
+
 class ValuesModule:
 	def set_current(connection):
 		ValuesModule._connection = connection
@@ -36,6 +38,7 @@ class ValuesModule:
 		ValuesModule._values["cycle_min_ppm"] = row["cycle_min_ppm"]
 		ValuesModule._values["dose_sleep_time"] = row["dose_sleep_time"]
 		ValuesModule._values["cycle_topup_value"] = row["cycle_topup_value"]
+		ValuesModule._values["version_number"] = config.misc["version"]
 		ValuesModule._values["doser_one_pump_one_name"] = row["doser_one_pump_one_name"]
 		ValuesModule._values["doser_one_pump_two_name"] = row["doser_one_pump_two_name"]
 		ValuesModule._values["doser_one_pump_three_name"] = row["doser_one_pump_three_name"]

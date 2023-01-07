@@ -225,6 +225,7 @@ class TuyaModule:
 		dps[config.dps["cycle_min_ppm"]] = data["cycle_min_ppm"]
 		dps[config.dps["dose_sleep_time"]] = data["dose_sleep_time"]
 		dps[config.dps["cycle_topup_value"]] = data["cycle_topup_value"]
+		dps[config.dps["version_number"]] = data["version_number"]
 		dps[config.dps["doser_one_pump_one_name"]] = data["doser_one_pump_one_name"]
 		dps[config.dps["doser_one_pump_two_name"]] = data["doser_one_pump_two_name"]
 		dps[config.dps["doser_one_pump_three_name"]] = data["doser_one_pump_three_name"]

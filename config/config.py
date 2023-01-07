@@ -9,7 +9,8 @@ mqtt = {
 
 misc = {
 	"debug_level": "DEBUG",
-	"roomID": ""
+	"roomID": "",
+	"version": "1.1.0"
 }
 
 sqlite = {
@@ -151,5 +152,6 @@ dps = {
 	"doser_one_m_pump_three": "160",
 	"doser_one_m_pump_four": "161",
 	"doser_one_m_pump_five": "162",
-	"doser_one_m_pump_six": "163"
+	"doser_one_m_pump_six": "163",
+	"version_number": "164"
 }
